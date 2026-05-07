@@ -33,3 +33,16 @@ addTodoBtn.addEventListener("click", ()=>{
 })
 
 populateTodos()
+
+const todoCheckboxes = document.querySelectorAll(".todo-checkbox")
+
+todoCheckboxes.forEach((element)=>{
+    element.addEventListener("click", (e)=>{
+        if(e.target.checked){
+            element.parentNode.classList.add("completed")
+        }
+        else{
+            element.parentNode.classList.remove("completed")
+        }
+    })
+})

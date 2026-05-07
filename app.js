@@ -12,24 +12,26 @@ if(todosString){
 const populateTodos = ()=>{ 
     let string = "";
     for (const todo of todos) {
-        string += `<li class="todo-item ${todo.isCompleted? "completed":""}">
+        string += `<li id="todo-${todo.id}" class="todo-item ${todo.isCompleted? "completed":""}">
             <input type="checkbox" class="todo-checkbox" ${todo.isCompleted? "checked":""} >
             <span class="todo-text">${todo.title}</span>
             <button class="delete-btn">×</button>
         </li>`
     }
-    todoListUl.innerHTML = todoListUl.innerHTML + string  
+    todoListUl.innerHTML = string  
 }
 
 addTodoBtn.addEventListener("click", ()=>{ 
     todoText = inputTag.value  
     inputTag.value = ""
     let todo = {
+        id: todos.length,
         title: todoText,
         isCompleted: false
     }
     todos.push(todo)
     localStorage.setItem("todos", JSON.stringify(todos))
+    populateTodos()
 })
 
 populateTodos()
@@ -40,9 +42,29 @@ todoCheckboxes.forEach((element)=>{
     element.addEventListener("click", (e)=>{
         if(e.target.checked){
             element.parentNode.classList.add("completed")
+            //Grab this todo from todos array and update the todos array to set this todos isCompleted attribute as true
+            todos = todos.map(todo =>{
+                if("todo-" + todo.id == element.parentNode.id){
+                    return {...todo, isCompleted: true}
+                }
+                else{
+                    return todo
+                }
+            })
+            localStorage.setItem("todos", JSON.stringify(todos))
         }
         else{
             element.parentNode.classList.remove("completed")
+             //Grab this todo from todos array and update the todos array to set this todos isCompleted attribute as false
+            todos = todos.map(todo =>{
+                if("todo-" + todo.id == element.parentNode.id){
+                    return {...todo, isCompleted: false}
+                }
+                else{
+                    return todo
+                }
+            })
+            localStorage.setItem("todos", JSON.stringify(todos))
         }
     })
 })

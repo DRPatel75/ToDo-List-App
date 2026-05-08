@@ -3,6 +3,9 @@ const inputTag = document.getElementById("todoInput")
 const todoListUl = document.getElementById("todoList")
 const remaining = document.getElementById("remaining-count")
 const clearCompletedBtn = document.getElementById("clearCompletedBtn")
+const filterBtns = document.querySelectorAll(".filter-btn")
+let currentFilter = "all"
+
 
 let todoText; // This should be populated when the user clicks on Add button
 let todos = [];
@@ -14,43 +17,46 @@ if (todosString) {
 }
 
 
-
 const populateTodos = () => {
-    let string = ""; 
-    for (const todo of todos) {
+    let filteredTodos = todos
+
+    // Filter Logic
+    if (currentFilter === "active") {
+        filteredTodos = todos.filter(todo => todo.isCompleted == false)
+    }
+    else if (currentFilter === "completed") {
+        filteredTodos = todos.filter(todo => todo.isCompleted == true)
+    }
+
+    let string = "";
+
+    for (const todo of filteredTodos) {
         string += `<li id="${todo.id}" class="todo-item ${todo.isCompleted ? "completed" : ""}">
             <input type="checkbox" class="todo-checkbox" ${todo.isCompleted ? "checked" : ""} >
             <span class="todo-text">${todo.title}</span>
             <button class="delete-btn">×</button>
-        </li>` 
+        </li>`
     }
     todoListUl.innerHTML = string
 
-
-    // Add the checkbox logic to populate todos
+    // Checkbox Logic
     const todoCheckboxes = document.querySelectorAll(".todo-checkbox")
 
     todoCheckboxes.forEach((element) => {
         element.addEventListener("click", (e) => {
             if (e.target.checked) {
                 element.parentNode.classList.add("completed")
-                console.log(todos)
-                // Grab this todo from todos array and update the todos array to set this todo's isCompleted attribute as true
                 todos = todos.map(todo => {
                     if (todo.id == element.parentNode.id) {
-                        console.log(todo.id, element.parentNode.id)
                         return { ...todo, isCompleted: true }
                     }
                     else {
                         return todo
                     }
                 })
-                remaining.innerHTML = todos.filter((item)=>{return item.isCompleted!=true}).length;
-                localStorage.setItem("todos", JSON.stringify(todos))
             }
             else {
                 element.parentNode.classList.remove("completed")
-                // Grab this todo from todos array and update the todos array to set this todos isCompleted attribute as false
                 todos = todos.map(todo => {
                     if (todo.id == element.parentNode.id) {
                         return { ...todo, isCompleted: false }
@@ -59,39 +65,60 @@ const populateTodos = () => {
                         return todo
                     }
                 })
-                remaining.innerHTML = todos.filter((item)=>{return item.isCompleted!=true}).length;
-                localStorage.setItem("todos", JSON.stringify(todos))
             }
+            remaining.innerHTML = todos.filter((item) => {
+                return item.isCompleted != true
+            }).length
+            localStorage.setItem("todos", JSON.stringify(todos))
+            populateTodos()
         })
     })
 
-
-
-    // Handle the clear completed button click
-    clearCompletedBtn.addEventListener("click", ()=>{
-        todos = todos.filter((todo)=> todo.isCompleted == false)
-        populateTodos()
+    // Clear Completed
+    clearCompletedBtn.addEventListener("click", () => {
+        todos = todos.filter((todo) => todo.isCompleted == false)
         localStorage.setItem("todos", JSON.stringify(todos))
+        populateTodos()
     })
 
-    // Handle the delete buttons
+    // Delete Button Logic
     let deleteBtns = document.querySelectorAll(".delete-btn")
 
     deleteBtns.forEach((element) => {
         element.addEventListener("click", (e) => {
-            const confirmation = confirm("Do you want to delete this todo") 
-            if(confirmation){ 
+            const confirmation = confirm("Do you want to delete this todo")
+
+            if (confirmation) {
                 todos = todos.filter((todo) => {
                     return (todo.id) !== (e.target.parentNode.id)
                 })
-                remaining.innerHTML = todos.filter((item)=>{return item.isCompleted!=true}).length;
+                remaining.innerHTML = todos.filter((item) => {
+                    return item.isCompleted != true
+                }).length
                 localStorage.setItem("todos", JSON.stringify(todos))
                 populateTodos()
             }
         })
     })
-    
 }
+
+// Filter Button Logic
+filterBtns.forEach((btn) => {
+    btn.addEventListener("click", () => {
+
+        // Remove active class from all buttons
+        filterBtns.forEach((button) => {
+            button.classList.remove("active")
+        })
+
+        // Add active class to clicked button
+        btn.classList.add("active")
+
+        // Store current filter
+        currentFilter = btn.dataset.filter
+        populateTodos()
+    })
+})
 
 
 addTodoBtn.addEventListener("click", () => {
@@ -112,5 +139,6 @@ addTodoBtn.addEventListener("click", () => {
     localStorage.setItem("todos", JSON.stringify(todos))
     populateTodos()
 })
+
 
 populateTodos()
